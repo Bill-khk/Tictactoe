@@ -30,7 +30,7 @@ oImg = ImageTk.PhotoImage(resized_image)
 COUNT = 1
 
 def play(n, r, c):
-    print(f"Play argument : n={n}, r={r}, c={c})")
+    # print(f"Play argument : n={n}, r={r}, c={c})")
     global xImg, oImg, COUNT
     cname = f"cnane{n}"
     query = f'{cname} = tk.Canvas(root, width=200, height=200, highlightthickness=1, highlightbackground="black")'
@@ -91,7 +91,7 @@ for x in range(9):
 
     # Create the Button
     bname = 'btn' + str(x)
-    query = f'{bname} = ttk.Button({fname}, style="W.TButton", command=partial(play, {x}, {row_n}, {col_n}))'
+    query = f'{bname} = ttk.Button({fname}, style="Outline.TButton", command=partial(play, {x}, {row_n}, {col_n}))'
     exec(query)
     query = f'{bname}.grid(row={str(row_n)}, column={str(col_n)}, sticky="nsew")'
     exec(query)
