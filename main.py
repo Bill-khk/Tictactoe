@@ -3,10 +3,11 @@ import tkinter.ttk as ttk
 import math
 from PIL import Image, ImageTk
 from functools import partial
+from tkinter import messagebox
 import numpy as np
 
-# Windows initialisation
-root = tk.Tk()
+#Windows creation
+root = tk.Tk()  # Board for graphical game
 root.title('Tic Tac Toe game')
 root.geometry('700x700')
 root.configure(background='white')
@@ -26,14 +27,16 @@ img = (Image.open("sign/o.png"))
 resized_image = img.resize((200, 200))
 oImg = ImageTk.PhotoImage(resized_image)
 
-# To count the number of round
-COUNT = 1
+COUNT = 1  # To count the number of round
+board = np.array(None)  # Board for functional game
 
 # -----------------------------LOGICAL GAME FUNCTION --------------------------------
 
 def initialize():
     global board
     board = np.array(([0, 0, 0], [0, 0, 0], [0, 0, 0]))
+    # Windows initialisation
+    create_graphic_board()
 
 
 def play_board(r, c, count):
@@ -43,18 +46,21 @@ def play_board(r, c, count):
         board[r, c] = 4
     print(board)
 
+
 def check():
     #diag variable initialization
     diag0 = 0
     diag1 = 0
-
+    box = ""
+    winner = 0
     # check row
     for row in board:
         if sum(row) == 3:
-            print('Player 1 won')
-
+            box = messagebox.askquestion(title='Winner', message="Player 1 won, do you want to retry ?", type='yesno')
+            winner = 1
         elif sum(row) == 12:
-            print('Player 2 won')
+            box = messagebox.askquestion(title='Winner', message="Player 2 won, do you want to retry ?", type='yesno')
+            winner = 2
 
     # Check col via index browsing and sum_count
     # Check diagonal via diag0 and diag1 count
@@ -69,12 +75,19 @@ def check():
 
     # Variable verification
     if sum_count == 3 or diag0 == 3 or diag1 == 3:
-        print('Player 1 won')
-        return 1
+        box = messagebox.askquestion(title='Winner', message="Player 1 won, do you want to retry ?", type='yesno')
+        winner = 1
     elif sum_count == 12 or diag0 == 12 or diag1 == 12:
-        print('Player 2 won')
-        return 2
-    return 0
+        box = messagebox.askquestion(title='Winner', message="Player 2 won, do you want to retry ?", type='yesno')
+        winner = 0
+
+    print(box)
+    if box == 'no':
+        root.destroy()
+    elif box == 'yes':
+        initialize()
+    return winner
+
 
 # ----------------------------- GRAPHICAL GAME FUNCTION --------------------------------
 
@@ -109,49 +122,52 @@ def play(n, r, c):
     check()
 
 
+# Initialize the game board with 9 buttons
+def create_graphic_board():
+    global root
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    for x in range(9):
+        row_n = math.trunc(x / 3)
+        col_n = x % 3
+
+        # Create a frame to contain the buttons and center it
+        fname = 'frame' + str(x)
+        query = f'{fname} = tk.Frame(root, width=200, height=200, bg="lightgrey")'
+        exec(query)
+        query = f'{fname}.grid_propagate(False)'  # Prevent the frame from resizing based on its contents
+        exec(query)
+
+        # Add padding on frame to center frames
+        if col_n == 0:
+            px = 50
+        else:
+            px = 0
+
+        if row_n == 0:
+            py = 50
+        else:
+            py = 0
+
+        query = f'{fname}.grid(row={row_n}, column={col_n}, padx = ({px}, 0), pady = ({py}, 0))'
+        exec(query)
+
+        # Configure the grid layout of the frame to allow the button to expand
+        query = f'{fname}.columnconfigure({col_n}, weight=1)'
+        exec(query)
+        query = f'{fname}.rowconfigure({row_n}, weight=1)'
+        exec(query)
+
+        # Create the Button
+        bname = 'btn' + str(x)
+        query = f'{bname} = ttk.Button({fname}, style="Outline.TButton", command=partial(play, {x}, {row_n}, {col_n}))'
+        exec(query)
+        query = f'{bname}.grid(row={str(row_n)}, column={str(col_n)}, sticky="nsew")'
+        exec(query)
+
 
 # ----------------------------- GAME INITIALISATION --------------------------------
-board = np.array(None)
 initialize()
-
-# Initialize the game board with 9 buttons
-for x in range(9):
-    row_n = math.trunc(x / 3)
-    col_n = x % 3
-
-    # Create a frame to contain the buttons and center it
-    fname = 'frame' + str(x)
-    query = f'{fname} = tk.Frame(root, width=200, height=200, bg="lightgrey")'
-    exec(query)
-    query = f'{fname}.grid_propagate(False)'  # Prevent the frame from resizing based on its contents
-    exec(query)
-
-    # Add padding on frame to center frames
-    if col_n == 0:
-        px = 50
-    else:
-        px = 0
-
-    if row_n == 0:
-        py = 50
-    else:
-        py = 0
-
-    query = f'{fname}.grid(row={row_n}, column={col_n}, padx = ({px}, 0), pady = ({py}, 0))'
-    exec(query)
-
-    # Configure the grid layout of the frame to allow the button to expand
-    query = f'{fname}.columnconfigure({col_n}, weight=1)'
-    exec(query)
-    query = f'{fname}.rowconfigure({row_n}, weight=1)'
-    exec(query)
-
-    # Create the Button
-    bname = 'btn' + str(x)
-    query = f'{bname} = ttk.Button({fname}, style="Outline.TButton", command=partial(play, {x}, {row_n}, {col_n}))'
-    exec(query)
-    query = f'{bname}.grid(row={str(row_n)}, column={str(col_n)}, sticky="nsew")'
-    exec(query)
-
 
 root.mainloop()
