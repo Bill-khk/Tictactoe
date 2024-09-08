@@ -3,6 +3,7 @@ import tkinter.ttk as ttk
 import math
 from PIL import Image, ImageTk
 from functools import partial
+import numpy as np
 
 # Windows initialisation
 root = tk.Tk()
@@ -25,12 +26,61 @@ img = (Image.open("sign/o.png"))
 resized_image = img.resize((200, 200))
 oImg = ImageTk.PhotoImage(resized_image)
 
-#oImg = tk.PhotoImage(file="sign/o2.png")
-
+# To count the number of round
 COUNT = 1
 
+# -----------------------------LOGICAL GAME FUNCTION --------------------------------
+
+def initialize():
+    global board
+    board = np.array(([0, 0, 0], [0, 0, 0], [0, 0, 0]))
+
+
+def play_board(r, c, count):
+    if count % 2 == 1:
+        board[r, c] = 1
+    else:
+        board[r, c] = 4
+    print(board)
+
+def check():
+    #diag variable initialization
+    diag0 = 0
+    diag1 = 0
+
+    # check row
+    for row in board:
+        if sum(row) == 3:
+            print('Player 1 won')
+
+        elif sum(row) == 12:
+            print('Player 2 won')
+
+    # Check col via index browsing and sum_count
+    # Check diagonal via diag0 and diag1 count
+    for x in range(3):
+        sum_count = 0
+        for y in range(3):
+            sum_count += int(board[y, x])
+            if y == x:
+                diag0 += board[y, x]
+            if y + x == 2:
+                diag1 += board[y, x]
+
+    # Variable verification
+    if sum_count == 3 or diag0 == 3 or diag1 == 3:
+        print('Player 1 won')
+        return 1
+    elif sum_count == 12 or diag0 == 12 or diag1 == 12:
+        print('Player 2 won')
+        return 2
+    return 0
+
+# ----------------------------- GRAPHICAL GAME FUNCTION --------------------------------
+
+# Replace a button by an image
 def play(n, r, c):
-    # print(f"Play argument : n={n}, r={r}, c={c})")
+    print(f"Play argument : n={n}, r={r}, c={c})")
     global xImg, oImg, COUNT
     cname = f"cnane{n}"
     query = f'{cname} = tk.Canvas(root, width=200, height=200, highlightthickness=1, highlightbackground="black")'
@@ -49,15 +99,22 @@ def play(n, r, c):
 
     query = f'{cname}.grid(row={r}, column={c}, padx = ({px}, 0), pady = ({py}, 0))'
     exec(query)
-    if COUNT%2 == 1:
+    if COUNT % 2 == 1:
         query = f'{cname}.create_image(100, 100, anchor="center", image=xImg)'
     else:
         query = f'{cname}.create_image(100, 100, anchor="center", image=oImg)'
     exec(query)
+    play_board(r, c, COUNT)
     COUNT += 1
-    print(COUNT)
+    check()
 
 
+
+# ----------------------------- GAME INITIALISATION --------------------------------
+board = np.array(None)
+initialize()
+
+# Initialize the game board with 9 buttons
 for x in range(9):
     row_n = math.trunc(x / 3)
     col_n = x % 3
